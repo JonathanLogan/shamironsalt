@@ -1,0 +1,44 @@
+{
+	"ImportPath": "github.com/JonathanLogan/shamironsalt",
+	"GoVersion": "go1.11",
+	"GodepVersion": "v80",
+	"Deps": [
+		{
+			"ImportPath": "github.com/codahale/sss",
+			"Rev": "0cb9f6d3f7f14abe7801e400be78df63f17db52d"
+		},
+		{
+			"ImportPath": "github.com/jessevdk/go-flags",
+			"Comment": "v1.4.0-3-g1c38ed7",
+			"Rev": "1c38ed7ad0cc3d9e66649ac398c30e45f395c4eb"
+		},
+		{
+			"ImportPath": "github.com/mewbak/gopass",
+			"Rev": "fa08fb4d03e3a626c172af829a5029727baf9222"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/curve25519",
+			"Rev": "614d502a4dac94afa3a6ce146bd1736da82514c6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/internal/subtle",
+			"Rev": "614d502a4dac94afa3a6ce146bd1736da82514c6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/nacl/box",
+			"Rev": "614d502a4dac94afa3a6ce146bd1736da82514c6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/nacl/secretbox",
+			"Rev": "614d502a4dac94afa3a6ce146bd1736da82514c6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/poly1305",
+			"Rev": "614d502a4dac94afa3a6ce146bd1736da82514c6"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/salsa20/salsa",
+			"Rev": "614d502a4dac94afa3a6ce146bd1736da82514c6"
+		}
+	]
+}
