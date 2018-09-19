@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -33,28 +31,6 @@ func (x *IniError) Error() string {
 	)
 }
 
-// IniOptions for writing
-type IniOptions uint
-
-const (
-	// IniNone indicates no options.
-	IniNone IniOptions = 0
-
-	// IniIncludeDefaults indicates that default values should be written.
-	IniIncludeDefaults = 1 << iota
-
-	// IniCommentDefaults indicates that if IniIncludeDefaults is used
-	// options with default values are written but commented out.
-	IniCommentDefaults
-
-	// IniIncludeComments indicates that comments containing the description
-	// of an option should be written.
-	IniIncludeComments
-
-	// IniDefault provides a default set of options.
-	IniDefault = IniIncludeComments
-)
-
 // IniParser is a utility to read and write flags options from and to ini
 // formatted strings.
 type IniParser struct {
@@ -75,36 +51,6 @@ type iniSection []iniValue
 type ini struct {
 	File     string
 	Sections map[string]iniSection
-}
-
-// NewIniParser creates a new ini parser for a given Parser.
-func NewIniParser(p *Parser) *IniParser {
-	return &IniParser{
-		parser: p,
-	}
-}
-
-// IniParse is a convenience function to parse command line options with default
-// settings from an ini formatted file. The provided data is a pointer to a struct
-// representing the default option group (named "Application Options"). For
-// more control, use flags.NewParser.
-func IniParse(filename string, data interface{}) error {
-	p := NewParser(data, Default)
-
-	return NewIniParser(p).ParseFile(filename)
-}
-
-// ParseFile parses flags from an ini formatted file. See Parse for more
-// information on the ini file format. The returned errors can be of the type
-// flags.Error or flags.IniError.
-func (i *IniParser) ParseFile(filename string) error {
-	ini, err := readIniFromFile(filename)
-
-	if err != nil {
-		return err
-	}
-
-	return i.parse(ini)
 }
 
 // Parse parses flags from an ini format. You can use ParseFile as a
@@ -141,22 +87,6 @@ func (i *IniParser) Parse(reader io.Reader) error {
 	return i.parse(ini)
 }
 
-// WriteFile writes the flags as ini format into a file. See Write
-// for more information. The returned error occurs when the specified file
-// could not be opened for writing.
-func (i *IniParser) WriteFile(filename string, options IniOptions) error {
-	return writeIniToFile(i, filename, options)
-}
-
-// Write writes the current values of all the flags to an ini format.
-// See Parse for more information on the ini file format. You typically
-// call this only after settings have been parsed since the default values of each
-// option are stored just before parsing the flags (this is only relevant when
-// IniIncludeDefaults is _not_ set in options).
-func (i *IniParser) Write(writer io.Writer, options IniOptions) {
-	writeIni(i, writer, options)
-}
-
 func readFullLine(reader *bufio.Reader) (string, error) {
 	var line []byte
 
@@ -179,196 +109,6 @@ func readFullLine(reader *bufio.Reader) (string, error) {
 	}
 
 	return string(line), nil
-}
-
-func optionIniName(option *Option) string {
-	name := option.tag.Get("_read-ini-name")
-
-	if len(name) != 0 {
-		return name
-	}
-
-	name = option.tag.Get("ini-name")
-
-	if len(name) != 0 {
-		return name
-	}
-
-	return option.field.Name
-}
-
-func writeGroupIni(cmd *Command, group *Group, namespace string, writer io.Writer, options IniOptions) {
-	var sname string
-
-	if len(namespace) != 0 {
-		sname = namespace
-	}
-
-	if cmd.Group != group && len(group.ShortDescription) != 0 {
-		if len(sname) != 0 {
-			sname += "."
-		}
-
-		sname += group.ShortDescription
-	}
-
-	sectionwritten := false
-	comments := (options & IniIncludeComments) != IniNone
-
-	for _, option := range group.options {
-		if option.isFunc() || option.Hidden {
-			continue
-		}
-
-		if len(option.tag.Get("no-ini")) != 0 {
-			continue
-		}
-
-		val := option.value
-
-		if (options&IniIncludeDefaults) == IniNone && option.valueIsDefault() {
-			continue
-		}
-
-		if !sectionwritten {
-			fmt.Fprintf(writer, "[%s]\n", sname)
-			sectionwritten = true
-		}
-
-		if comments && len(option.Description) != 0 {
-			fmt.Fprintf(writer, "; %s\n", option.Description)
-		}
-
-		oname := optionIniName(option)
-
-		commentOption := (options&(IniIncludeDefaults|IniCommentDefaults)) == IniIncludeDefaults|IniCommentDefaults && option.valueIsDefault()
-
-		kind := val.Type().Kind()
-		switch kind {
-		case reflect.Slice:
-			kind = val.Type().Elem().Kind()
-
-			if val.Len() == 0 {
-				writeOption(writer, oname, kind, "", "", true, option.iniQuote)
-			} else {
-				for idx := 0; idx < val.Len(); idx++ {
-					v, _ := convertToString(val.Index(idx), option.tag)
-
-					writeOption(writer, oname, kind, "", v, commentOption, option.iniQuote)
-				}
-			}
-		case reflect.Map:
-			kind = val.Type().Elem().Kind()
-
-			if val.Len() == 0 {
-				writeOption(writer, oname, kind, "", "", true, option.iniQuote)
-			} else {
-				mkeys := val.MapKeys()
-				keys := make([]string, len(val.MapKeys()))
-				kkmap := make(map[string]reflect.Value)
-
-				for i, k := range mkeys {
-					keys[i], _ = convertToString(k, option.tag)
-					kkmap[keys[i]] = k
-				}
-
-				sort.Strings(keys)
-
-				for _, k := range keys {
-					v, _ := convertToString(val.MapIndex(kkmap[k]), option.tag)
-
-					writeOption(writer, oname, kind, k, v, commentOption, option.iniQuote)
-				}
-			}
-		default:
-			v, _ := convertToString(val, option.tag)
-
-			writeOption(writer, oname, kind, "", v, commentOption, option.iniQuote)
-		}
-
-		if comments {
-			fmt.Fprintln(writer)
-		}
-	}
-
-	if sectionwritten && !comments {
-		fmt.Fprintln(writer)
-	}
-}
-
-func writeOption(writer io.Writer, optionName string, optionType reflect.Kind, optionKey string, optionValue string, commentOption bool, forceQuote bool) {
-	if forceQuote || (optionType == reflect.String && !isPrint(optionValue)) {
-		optionValue = strconv.Quote(optionValue)
-	}
-
-	comment := ""
-	if commentOption {
-		comment = "; "
-	}
-
-	fmt.Fprintf(writer, "%s%s =", comment, optionName)
-
-	if optionKey != "" {
-		fmt.Fprintf(writer, " %s:%s", optionKey, optionValue)
-	} else if optionValue != "" {
-		fmt.Fprintf(writer, " %s", optionValue)
-	}
-
-	fmt.Fprintln(writer)
-}
-
-func writeCommandIni(command *Command, namespace string, writer io.Writer, options IniOptions) {
-	command.eachGroup(func(group *Group) {
-		if !group.Hidden {
-			writeGroupIni(command, group, namespace, writer, options)
-		}
-	})
-
-	for _, c := range command.commands {
-		var nns string
-
-		if c.Hidden {
-			continue
-		}
-
-		if len(namespace) != 0 {
-			nns = c.Name + "." + nns
-		} else {
-			nns = c.Name
-		}
-
-		writeCommandIni(c, nns, writer, options)
-	}
-}
-
-func writeIni(parser *IniParser, writer io.Writer, options IniOptions) {
-	writeCommandIni(parser.parser.Command, "", writer, options)
-}
-
-func writeIniToFile(parser *IniParser, filename string, options IniOptions) error {
-	file, err := os.Create(filename)
-
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
-	writeIni(parser, file, options)
-
-	return nil
-}
-
-func readIniFromFile(filename string) (*ini, error) {
-	file, err := os.Open(filename)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-
-	return readIni(file, filename)
 }
 
 func readIni(contents io.Reader, filename string) (*ini, error) {

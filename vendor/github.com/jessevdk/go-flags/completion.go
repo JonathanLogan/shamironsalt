@@ -2,7 +2,6 @@ package flags
 
 import (
 	"fmt"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -43,26 +42,6 @@ type Completer interface {
 
 type completion struct {
 	parser *Parser
-}
-
-// Filename is a string alias which provides filename completion.
-type Filename string
-
-func completionsWithoutDescriptions(items []string) []Completion {
-	ret := make([]Completion, len(items))
-
-	for i, v := range items {
-		ret[i].Item = v
-	}
-
-	return ret
-}
-
-// Complete returns a list of existing files with the given
-// prefix.
-func (f *Filename) Complete(match string) []Completion {
-	ret, _ := filepath.Glob(match + "*")
-	return completionsWithoutDescriptions(ret)
 }
 
 func (c *completion) skipPositional(s *parseState, n int) {

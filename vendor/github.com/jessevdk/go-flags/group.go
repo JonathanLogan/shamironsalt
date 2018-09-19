@@ -73,11 +73,6 @@ func (g *Group) AddGroup(shortDescription string, longDescription string, data i
 	return group, nil
 }
 
-// Groups returns the list of groups embedded in this group.
-func (g *Group) Groups() []*Group {
-	return g.groups
-}
-
 // Options returns the list of options in this group.
 func (g *Group) Options() []*Option {
 	return g.options
@@ -98,34 +93,6 @@ func (g *Group) Find(shortDescription string) *Group {
 	})
 
 	return ret
-}
-
-func (g *Group) findOption(matcher func(*Option) bool) (option *Option) {
-	g.eachGroup(func(g *Group) {
-		for _, opt := range g.options {
-			if option == nil && matcher(opt) {
-				option = opt
-			}
-		}
-	})
-
-	return option
-}
-
-// FindOptionByLongName finds an option that is part of the group, or any of its
-// subgroups, by matching its long name (including the option namespace).
-func (g *Group) FindOptionByLongName(longName string) *Option {
-	return g.findOption(func(option *Option) bool {
-		return option.LongNameWithNamespace() == longName
-	})
-}
-
-// FindOptionByShortName finds an option that is part of the group, or any of
-// its subgroups, by matching its short name.
-func (g *Group) FindOptionByShortName(shortName rune) *Option {
-	return g.findOption(func(option *Option) bool {
-		return option.ShortName == shortName
-	})
 }
 
 func newGroup(shortDescription string, longDescription string, data interface{}) *Group {

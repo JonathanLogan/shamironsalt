@@ -353,14 +353,6 @@ func (p *parseState) pop() string {
 	return p.arg
 }
 
-func (p *parseState) peek() string {
-	if p.eof() {
-		return ""
-	}
-
-	return p.args[0]
-}
-
 func (p *parseState) checkRequired(parser *Parser) error {
 	c := parser.Command
 
@@ -691,14 +683,4 @@ func (p *Parser) printError(err error) error {
 	}
 
 	return err
-}
-
-func (p *Parser) clearIsSet() {
-	p.eachCommand(func(c *Command) {
-		c.eachGroup(func(g *Group) {
-			for _, option := range g.options {
-				option.isSet = false
-			}
-		})
-	}, true)
 }
