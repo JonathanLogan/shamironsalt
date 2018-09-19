@@ -1,3 +1,4 @@
+// shamironsalt implements Shamir's Secret Sharing with NaCl.
 package main
 
 import (
