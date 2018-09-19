@@ -1,5 +1,8 @@
 Shamir on Salt
 ===============
+
+[![GoDoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/JonathanLogan/shamironsalt) [![Build Status](https://img.shields.io/travis/JonathanLogan/shamironsalt.svg?style=flat-square)](https://travis-ci.org/JonathanLogan/shamironsalt) [![Go Report Card](https://goreportcard.com/badge/github.com/JonathanLogan/shamironsalt?style=flat-square)](https://goreportcard.com/report/github.com/JonathanLogan/shamironsalt)
+
 is shamir secret sharing with a NaCL secured protocol for share group member communication.
 
 This allows you to share a secret over a group of N members so that at least K members have to come together to reconstruct it. 
