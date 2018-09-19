@@ -7,8 +7,6 @@ import (
 	"github.com/JonathanLogan/shamironsalt/command"
 )
 
-// ToDo: Fossil upload
-
 var intro = "\nIntroduction:\n" +
 	"Shamir On Salt (version 0.1) is an implementation of shamir secret sharing combined with a share\n" +
 	"exchange protocol based on NaCl.\n" +
