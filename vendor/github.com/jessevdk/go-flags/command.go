@@ -94,11 +94,6 @@ func (c *Command) AddGroup(shortDescription string, longDescription string, data
 	return group, nil
 }
 
-// Commands returns a list of subcommands of this command.
-func (c *Command) Commands() []*Command {
-	return c.commands
-}
-
 // Find locates the subcommand with the given name and returns it. If no such
 // command can be found Find will return nil.
 func (c *Command) Find(name string) *Command {
@@ -109,40 +104,6 @@ func (c *Command) Find(name string) *Command {
 	}
 
 	return nil
-}
-
-// FindOptionByLongName finds an option that is part of the command, or any of
-// its parent commands, by matching its long name (including the option
-// namespace).
-func (c *Command) FindOptionByLongName(longName string) (option *Option) {
-	for option == nil && c != nil {
-		option = c.Group.FindOptionByLongName(longName)
-
-		c, _ = c.parent.(*Command)
-	}
-
-	return option
-}
-
-// FindOptionByShortName finds an option that is part of the command, or any of
-// its parent commands, by matching its long name (including the option
-// namespace).
-func (c *Command) FindOptionByShortName(shortName rune) (option *Option) {
-	for option == nil && c != nil {
-		option = c.Group.FindOptionByShortName(shortName)
-
-		c, _ = c.parent.(*Command)
-	}
-
-	return option
-}
-
-// Args returns a list of positional arguments associated with this command.
-func (c *Command) Args() []*Arg {
-	ret := make([]*Arg, len(c.args))
-	copy(ret, c.args)
-
-	return ret
 }
 
 func newCommand(name string, shortDescription string, longDescription string, data interface{}) *Command {

@@ -220,21 +220,6 @@ func (option *Option) Value() interface{} {
 	return option.value.Interface()
 }
 
-// Field returns the reflect struct field of the option.
-func (option *Option) Field() reflect.StructField {
-	return option.field
-}
-
-// IsSet returns true if option has been set
-func (option *Option) IsSet() bool {
-	return option.isSet
-}
-
-// IsSetDefault returns true if option has been set via the default option tag
-func (option *Option) IsSetDefault() bool {
-	return option.isSetDefault
-}
-
 // Set the value of an option to the specified value. An error will be returned
 // if the specified value could not be converted to the corresponding option
 // value type.
@@ -344,25 +329,6 @@ func (option *Option) clearDefault() {
 			}
 		}
 	}
-}
-
-func (option *Option) valueIsDefault() bool {
-	// Check if the value of the option corresponds to its
-	// default value
-	emptyval := option.emptyValue()
-
-	checkvalptr := reflect.New(emptyval.Type())
-	checkval := reflect.Indirect(checkvalptr)
-
-	checkval.Set(emptyval)
-
-	if len(option.Default) != 0 {
-		for _, v := range option.Default {
-			convert(v, checkval, option.tag)
-		}
-	}
-
-	return reflect.DeepEqual(option.value.Interface(), checkval.Interface())
 }
 
 func (option *Option) isUnmarshaler() Unmarshaler {

@@ -2,11 +2,6 @@ package sss
 
 import "io"
 
-// the degree of the polynomial
-func degree(p []byte) int {
-	return len(p) - 1
-}
-
 // evaluate the polynomial at the given point
 func eval(p []byte, x byte) (result byte) {
 	// Horner's scheme

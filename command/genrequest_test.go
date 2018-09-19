@@ -3,7 +3,6 @@ package command
 import (
 	"encoding/hex"
 	"os"
-	//"shamironsalt/shares"
 	"strconv"
 	"testing"
 	"time"
