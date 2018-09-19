@@ -8,6 +8,12 @@ is shamir secret sharing with a NaCL secured protocol for share group member com
 This allows you to share a secret over a group of N members so that at least K members have to come together to reconstruct it.
 Shamironsalt supports giving more than one share to members, so that some members are more equal than others.
 
+Installation
+------------
+
+```
+go get -u -v github.com/JonathanLogan/shamironsalt
+```
 
 Usage
 -----
